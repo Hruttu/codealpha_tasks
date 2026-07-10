@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Order Ledger — Data Visualization Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
+
+  :root{
+    --paper:#F2F1E9;
+    --ink:#1C2A22;
+    --register:#2F5233;
+    --amber:#B4622E;
+    --alert:#9A3B3B;
+    --line:#C9C4B4;
+    --card:#FBFAF5;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:980px;margin:0 auto;padding:48px 24px 96px;}
+
+  .receipt{
+    background:var(--card);
+    border:1px solid var(--line);
+    box-shadow:0 1px 0 var(--line);
+    padding:32px 28px 24px;
+    position:relative;
+  }
+  .receipt::before, .receipt::after{
+    content:"";
+    position:absolute; left:0; right:0; height:10px;
+    background-image: radial-gradient(circle at 8px 5px, var(--paper) 5px, transparent 5.5px);
+    background-size:16px 10px; background-repeat:repeat-x;
+  }
+  .receipt::before{top:-5px;}
+  .receipt::after{bottom:-5px; transform:rotate(180deg);}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--register); margin:0 0 6px;
+  }
+  h1{
+    font-family:'Fraunces',serif; font-weight:600; font-size:clamp(28px,4vw,40px);
+    margin:0 0 4px; line-height:1.05;
+  }
+  .subhead{
+    font-family:'IBM Plex Mono',monospace; font-size:13px; color:#5B6058; margin:0 0 20px;
+  }
+  .kpi-row{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:0;
+    border-top:1px dashed var(--line); padding-top:18px; margin-top:14px;
+  }
+  .kpi{padding:0 14px; border-left:1px dashed var(--line);}
+  .kpi:first-child{border-left:none; padding-left:0;}
+  .kpi-label{font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#7A7F76;}
+  .kpi-value{font-family:'Fraunces',serif; font-weight:600; font-size:26px; margin-top:4px;}
+  .kpi-value.warn{color:var(--alert);}
+
+  section{margin-top:56px;}
+  .section-head{display:flex; align-items:baseline; gap:12px; margin-bottom:4px;}
+  .tag{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--amber);
+    border:1px solid var(--amber); padding:2px 8px; border-radius:2px; letter-spacing:.05em;
+  }
+  h2{font-family:'Fraunces',serif; font-size:22px; font-weight:600; margin:0;}
+  .insight{
+    font-size:14.5px; line-height:1.6; color:#3B443C; max-width:640px; margin:10px 0 20px;
+  }
+  .chart-card{
+    background:var(--card); border:1px solid var(--line); padding:18px 18px 10px;
+  }
+  .chart-title{
+    font-family:'Fraunces',serif; font-weight:600; font-size:14px; color:var(--ink); margin:0 0 8px;
+  }
+  .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:24px;}
+  canvas{width:100%; display:block;}
+
+  .flag-box{
+    border-left:3px solid var(--alert); background:var(--card); padding:14px 18px;
+    margin-top:14px; font-size:13.5px; line-height:1.6; color:#3B443C;
+  }
+  .flag-box b{color:var(--alert);}
+
+  footer{
+    margin-top:64px; padding-top:16px; border-top:1px dashed var(--line);
+    font-family:'IBM Plex Mono',monospace; font-size:11px; color:#8A8F87; text-align:center;
+  }
+
+  @media (max-width:640px){
+    .kpi-row{grid-template-columns:1fr 1fr; row-gap:16px;}
+    .kpi{border-left:none; border-top:1px dashed var(--line); padding-top:12px;}
+    .kpi:first-child, .kpi:nth-child(3){border-top:none;padding-top:0;}
+    .grid-2{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="receipt">
+    <p class="eyebrow">Task 3 · Data Visualization</p>
+    <h1>Order Ledger</h1>
+    <p class="subhead">9 orders · Jan 01–09 2022 · task2excel.csv</p>
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-label">Total Revenue</div><div class="kpi-value">$11,272.64</div></div>
+      <div class="kpi"><div class="kpi-label">Avg Order Value</div><div class="kpi-value">$1,252.52</div></div>
+      <div class="kpi"><div class="kpi-label">Avg Rating</div><div class="kpi-value">3.09 / 5</div></div>
+      <div class="kpi"><div class="kpi-label">Delivery→Rating Corr.</div><div class="kpi-value warn">−0.53</div></div>
+    </div>
+  </div>
+
+  <section>
+    <div class="section-head"><span class="tag">Category</span><h2>Where the revenue comes from</h2></div>
+    <p class="insight">Electronics orders are fewer but heavier — two orders alone account for nearly $3,000. Clothing has the most orders (4) but the lowest average ticket size, dragged down by high discount rates.</p>
+    <div class="grid-2">
+      <div class="chart-card"><p class="chart-title">Avg Revenue by Category</p><canvas id="catChart" width="440" height="260"></canvas></div>
+      <div class="chart-card"><p class="chart-title">Avg Revenue by Region</p><canvas id="regionChart" width="440" height="260"></canvas></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="tag">Trend</span><h2>Revenue across the nine days</h2></div>
+    <p class="insight">No ramp-up or seasonal pattern — revenue swings order to order, from $304 to $2,608. At this volume, one large Electronics order can double the week's take on its own.</p>
+    <div class="chart-card"><p class="chart-title">Daily Revenue, Jan 1–9 2022</p><canvas id="trendChart" width="920" height="280"></canvas></div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="tag">Satisfaction</span><h2>What actually predicts a happy customer</h2></div>
+    <p class="insight">Delivery speed tracks with rating far more than price or discount does — the slowest delivery (10 days) paired with a mediocre 4.7 only because the product itself may have compensated; the two 6-day+ deliveries drag ratings down toward 1.6–2.5.</p>
+    <div class="grid-2">
+      <div class="chart-card"><p class="chart-title">Delivery Days vs Customer Rating</p><canvas id="deliveryChart" width="440" height="280"></canvas></div>
+      <div class="chart-card"><p class="chart-title">Avg Rating by Payment Method</p><canvas id="paymentChart" width="440" height="280"></canvas></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="tag">Caveat</span><h2>Read this before trusting the trends above</h2></div>
+    <div class="flag-box">
+      <b>Small sample warning —</b> this ledger holds 9 orders. Category and region averages are each built from 1–4 data points, and the delivery→rating correlation, while visually convincing, is not statistically significant at this size. Treat every chart here as a <i>hypothesis to test</i> on a larger dataset, not a conclusion to act on.
+    </div>
+  </section>
+
+  <footer>PORTFOLIO PIECE — HAND-DRAWN WITH VANILLA JAVASCRIPT (CANVAS API) — DATA SOURCE: task2excel.csv</footer>
+</div>
+
+<script>
+/* ============================================================
+   No charting library — everything below draws directly onto
+   <canvas> elements using the plain Canvas 2D API.
+   ============================================================ */
+
+const palette = { register:'#2F5233', amber:'#B4622E', alert:'#9A3B3B', mute:'#8A8F87', line:'#C9C4B4', ink:'#1C2A22', grid:'#E4E1D5' };
+
+// Scale a canvas for crisp rendering on high-DPI screens
+function prepCanvas(canvas){
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = canvas.width, cssH = canvas.height;
+  canvas.style.width = cssW + 'px';
+  canvas.style.height = cssH + 'px';
+  canvas.width = cssW * dpr;
+  canvas.height = cssH * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  return { ctx, w: cssW, h: cssH };
+}
+
+function drawGrid(ctx, x0, y0, x1, y1, hLines){
+  ctx.strokeStyle = palette.grid;
+  ctx.lineWidth = 1;
+  for(let i=0;i<=hLines;i++){
+    const y = y0 + (y1-y0) * (i/hLines);
+    ctx.beginPath();
+    ctx.moveTo(x0, y);
+    ctx.lineTo(x1, y);
+    ctx.stroke();
+  }
+  ctx.strokeStyle = palette.line;
+  ctx.beginPath();
+  ctx.moveTo(x0, y0); ctx.lineTo(x0, y1); ctx.lineTo(x1, y1);
+  ctx.stroke();
+}
+
+/* ---------- Horizontal bar chart ---------- */
+function drawHBarChart(canvasId, labels, values, colors, opts={}){
+  const canvas = document.getElementById(canvasId);
+  const { ctx, w, h } = prepCanvas(canvas);
+  ctx.clearRect(0,0,w,h);
+  ctx.font = "11px 'IBM Plex Mono', monospace";
+  ctx.textBaseline = 'middle';
+
+  const padL = 78, padR = 60, padT = 10, padB = 10;
+  const plotW = w - padL - padR;
+  const plotH = h - padT - padB;
+  const max = opts.max ?? Math.max(...values) * 1.15;
+  const barH = plotH / labels.length * 0.55;
+  const gap = plotH / labels.length;
+
+  // vertical gridlines
+  ctx.strokeStyle = palette.grid;
+  for(let i=0;i<=4;i++){
+    const x = padL + plotW * (i/4);
+    ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, h-padB); ctx.stroke();
+  }
+
+  labels.forEach((label, i)=>{
+    const y = padT + gap*i + gap/2;
+    const barLen = (values[i]/max) * plotW;
+
+    // label
+    ctx.fillStyle = palette.ink;
+    ctx.textAlign = 'right';
+    ctx.fillText(label, padL - 10, y);
+
+    // bar
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.fillRect(padL, y - barH/2, barLen, barH);
+
+    // value
+    ctx.fillStyle = '#5B6058';
+    ctx.textAlign = 'left';
+    ctx.fillText(opts.prefix ? opts.prefix + values[i].toLocaleString() : values[i], padL + barLen + 8, y);
+  });
+}
+
+/* ---------- Line / area chart ---------- */
+function drawLineChart(canvasId, labels, values, opts={}){
+  const canvas = document.getElementById(canvasId);
+  const { ctx, w, h } = prepCanvas(canvas);
+  ctx.clearRect(0,0,w,h);
+  ctx.font = "10px 'IBM Plex Mono', monospace";
+
+  const padL = 56, padR = 20, padT = 16, padB = 34;
+  const plotW = w - padL - padR;
+  const plotH = h - padT - padB;
+  const max = Math.max(...values) * 1.15;
+  const min = 0;
+
+  drawGrid(ctx, padL, padT, w-padR, h-padB, 4);
+
+  // y axis labels
+  ctx.fillStyle = '#7A7F76';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  for(let i=0;i<=4;i++){
+    const val = max - (max-min)*(i/4);
+    const y = padT + plotH*(i/4);
+    ctx.fillText('$'+Math.round(val).toLocaleString(), padL-8, y);
+  }
+
+  const stepX = plotW / (labels.length-1);
+  const pts = values.map((v,i)=>({
+    x: padL + stepX*i,
+    y: padT + plotH - ((v-min)/(max-min))*plotH
+  }));
+
+  // area fill
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, padT+plotH);
+  pts.forEach(p=>ctx.lineTo(p.x,p.y));
+  ctx.lineTo(pts[pts.length-1].x, padT+plotH);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(47,82,51,0.08)';
+  ctx.fill();
+
+  // line
+  ctx.beginPath();
+  pts.forEach((p,i)=> i===0 ? ctx.moveTo(p.x,p.y) : ctx.lineTo(p.x,p.y));
+  ctx.strokeStyle = palette.register;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // points + x labels
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  pts.forEach((p,i)=>{
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 4, 0, Math.PI*2);
+    ctx.fillStyle = palette.register;
+    ctx.fill();
+    ctx.fillStyle = '#5B6058';
+    ctx.fillText(labels[i], p.x, h-padB+10);
+  });
+}
+
+/* ---------- Scatter chart ---------- */
+function drawScatterChart(canvasId, points, opts={}){
+  const canvas = document.getElementById(canvasId);
+  const { ctx, w, h } = prepCanvas(canvas);
+  ctx.clearRect(0,0,w,h);
+  ctx.font = "10px 'IBM Plex Mono', monospace";
+
+  const padL = 40, padR = 20, padT = 16, padB = 40;
+  const plotW = w - padL - padR;
+  const plotH = h - padT - padB;
+  const xMax = opts.xMax ?? Math.max(...points.map(p=>p.x)) * 1.15;
+  const yMax = opts.yMax ?? 5;
+
+  drawGrid(ctx, padL, padT, w-padR, h-padB, 5);
+
+  // y labels (rating 0-5)
+  ctx.fillStyle = '#7A7F76';
+  ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  for(let i=0;i<=5;i++){
+    const val = yMax - yMax*(i/5);
+    const y = padT + plotH*(i/5);
+    ctx.fillText(val.toFixed(0), padL-8, y);
+  }
+
+  // x labels
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  for(let i=0;i<=Math.ceil(xMax);i+=2){
+    const x = padL + plotW*(i/xMax);
+    ctx.fillText(i, x, h-padB+8);
+  }
+  ctx.fillText('Delivery Days →', padL + plotW/2, h-18);
+
+  // trend line (simple linear regression)
+  const n = points.length;
+  const sumX = points.reduce((a,p)=>a+p.x,0);
+  const sumY = points.reduce((a,p)=>a+p.y,0);
+  const sumXY = points.reduce((a,p)=>a+p.x*p.y,0);
+  const sumX2 = points.reduce((a,p)=>a+p.x*p.x,0);
+  const slope = (n*sumXY - sumX*sumY) / (n*sumX2 - sumX*sumX);
+  const intercept = (sumY - slope*sumX) / n;
+  const x1 = 0, x2 = xMax;
+  const y1 = intercept, y2 = slope*x2 + intercept;
+  const toPx = (x,y)=>({ x: padL + (x/xMax)*plotW, y: padT + plotH - (y/yMax)*plotH });
+  const p1 = toPx(x1,y1), p2 = toPx(x2,y2);
+  ctx.beginPath();
+  ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y);
+  ctx.strokeStyle = palette.line;
+  ctx.setLineDash([4,4]);
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // points
+  points.forEach(p=>{
+    const px = padL + (p.x/xMax)*plotW;
+    const py = padT + plotH - (p.y/yMax)*plotH;
+    ctx.beginPath();
+    ctx.arc(px, py, 6, 0, Math.PI*2);
+    ctx.fillStyle = palette.amber;
+    ctx.fill();
+  });
+}
+
+/* ---------- Render everything ---------- */
+drawHBarChart('catChart',
+  ['Clothing','Beauty','Electronics'],
+  [1091.27, 1304.85, 1496.50],
+  [palette.mute, palette.amber, palette.register],
+  { prefix: '$' }
+);
+
+drawHBarChart('regionChart',
+  ['East','West','North','South'],
+  [644.35, 1153.85, 1387.01, 1444.93],
+  [palette.alert, palette.mute, palette.amber, palette.register],
+  { prefix: '$' }
+);
+
+drawLineChart('trendChart',
+  ['Jan 1','Jan 2','Jan 3','Jan 4','Jan 5','Jan 6','Jan 7','Jan 8','Jan 9'],
+  [1883.2, 304.1, 644.35, 2569.9, 468.56, 423.1, 2608.45, 1387.01, 983.97]
+);
+
+drawScatterChart('deliveryChart', [
+  {x:10,y:4.7},{x:6,y:3.9},{x:6,y:2.5},{x:6,y:1.6},{x:4,y:4.9},
+  {x:3,y:3.3},{x:1,y:1.8},{x:2,y:3.7},{x:2,y:1.4}
+], { xMax: 11 });
+
+drawHBarChart('paymentChart',
+  ['COD','Card','Wallet'],
+  [2.5, 2.82, 3.73],
+  [palette.alert, palette.mute, palette.register],
+  { max: 5 }
+);
+
+// Redraw on resize so charts stay crisp
+let resizeTimer;
+window.addEventListener('resize', ()=>{
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(()=>{
+    drawHBarChart('catChart', ['Clothing','Beauty','Electronics'], [1091.27, 1304.85, 1496.50], [palette.mute, palette.amber, palette.register], { prefix: '$' });
+    drawHBarChart('regionChart', ['East','West','North','South'], [644.35, 1153.85, 1387.01, 1444.93], [palette.alert, palette.mute, palette.amber, palette.register], { prefix: '$' });
+    drawLineChart('trendChart', ['Jan 1','Jan 2','Jan 3','Jan 4','Jan 5','Jan 6','Jan 7','Jan 8','Jan 9'], [1883.2, 304.1, 644.35, 2569.9, 468.56, 423.1, 2608.45, 1387.01, 983.97]);
+    drawScatterChart('deliveryChart', [{x:10,y:4.7},{x:6,y:3.9},{x:6,y:2.5},{x:6,y:1.6},{x:4,y:4.9},{x:3,y:3.3},{x:1,y:1.8},{x:2,y:3.7},{x:2,y:1.4}], { xMax: 11 });
+    drawHBarChart('paymentChart', ['COD','Card','Wallet'], [2.5, 2.82, 3.73], [palette.alert, palette.mute, palette.register], { max: 5 });
+  }, 150);
+});
+</script>
+</body>
+</html>
