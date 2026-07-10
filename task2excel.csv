@@ -1,0 +1,10 @@
+﻿order_id,order_date,customer_id,product_category,region,quantity,unit_price,discount,payment_method,delivery_days,customer_rating,revenue
+10001,1/1/2022,1102,Beauty,South,7,373.65,0.28,Wallet,10,4.7,1883.2
+10002,1/2/2022,1435,Clothing,South,7,47.74,0.09,Card,6,3.9,304.1
+10003,1/3/2022,1860,Beauty,East,3,311.28,0.31,COD,6,2.5,644.35
+10004,1/4/2022,1270,Electronics,West,5,524.47,0.02,Wallet,6,1.6,2569.9
+10005,1/5/2022,1106,Clothing,West,5,139.87,0.33,Wallet,4,4.9,468.56
+10006,1/6/2022,1071,Electronics,West,2,264.44,0.2,Card,3,3.3,423.1
+10007,1/7/2022,1700,Clothing,South,6,564.6,0.23,Card,1,1.8,2608.45
+10008,1/8/2022,1020,Beauty,North,6,265.71,0.13,Card,2,3.7,1387.01
+10009,1/9/2022,1614,Clothing,South,6,224.65,0.27,Card,2,1.4,983.97
